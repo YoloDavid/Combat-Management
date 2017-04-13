@@ -1,0 +1,177 @@
+#!/usr/bin/env lua
+-- Gui API
+function printAtPos(message, x, y)
+    term.setCursorPos(x,y)
+    print(message)
+end
+
+-- Deze functie zorgt voor de gui
+function updateScreen(titel, stap, player)
+    local w, h = term.getSize()
+    term.setTextColor(colors.white)
+    term.setBackgroundColor(colors.gray)
+    term.clear()
+
+    paintutils.drawLine(3, 2, w-2, 2, colors.red)
+    printAtPos(titel, 4, 2)
+    if stap ~= nil then
+        printAtPos("Stap " ..stap.. "/5", w-11, 2)
+    end
+
+    paintutils.drawFilledBox(3, 3, w-2, h-1, colors.lightGray)
+    if player ~= nil then
+        term.setBackgroundColor(colors.red)
+        printAtPos(" " ..player.. " ", 3, h-1)
+    end
+
+    term.setTextColor(colors.black)
+    term.setBackgroundColor(colors.lightGray)
+end
+
+function startupAPIError(api)
+    updateScreen("Opstart Error")
+    printAtPos("API " ..api.. " kan niet worden gevonden...", 5, 6)
+    printAtPos("Hebt u iets verandert?", 5, 7)
+    printAtPos("Gebruik de installer voor herinstallatie!", 5, 9)
+end
+
+function startupPeripheralsError(modem, sensor)
+    local hasModem
+    local hasPlayerSensor
+    if modem == true then hasModem = "Found" else hasModem = "Not found" end
+    if sensor == true then hasPlayerSensor = "Found" else hasPlayerSensor = "Not found" end
+    updateScreen("Opstart Error")
+    printAtPos("Een of meerdere peripherls zijn niet gevonden!", 5, 6)
+    printAtPos("Peripherls:", 5, 8)
+    printAtPos("Modem/Bridge : " ..hasModem, 5, 9)
+    printAtPos("Player Sensor: " ..hasPlayerSensor, 5, 10)
+end
+
+function startupPreferencesError()
+    updateScreen("Opstart Error")
+    printAtPos("Het preference bestand is niet gevonden!", 5, 6)
+end
+
+function serverCommunicate(tries)
+    updateScreen("Server Communicatie")
+    printAtPos("Communiceren met server...", 5, 6)
+    if tries > 0 then
+        printAtPos("Server heeft niet gereageerd...", 5, 8)
+        printAtPos("Geprobeerd: " ..tries, 5, 9)
+    end
+end
+
+function serverOffline()
+    updateScreen("Server Communicatie Error")
+    printAtPos("De server kon niet gevonden worden", 5, 6)
+    printAtPos("Dit kan door de volgende redenen komen:", 5, 8)
+    printAtPos("[1] De server staat niet aan", 5, 9)
+    printAtPos("[2] De instelling kloppen niet", 5, 10)
+    printAtPos("[2] De server is gecrasht", 5, 11)
+    printAtPos("Er word in 30 sec opnieuw geprobeerd!", 5, 13)
+end
+
+function choosePlayer()
+    updateScreen("Player Selectie", "1")
+    printAtPos("Om je identiteit vast te stellen", 5, 5)
+    printAtPos("Richt Click de sensor bij de PC!", 5, 6)
+    printAtPos("Kom daarna weer terug", 5, 8)
+end
+
+function choosePlayerConfirm(player)
+    updateScreen("Player Selectie", "1")
+    printAtPos("Player identiteit: " ..player, 5, 5)
+    printAtPos("Als jij dit bent druk op enter!", 5, 6)
+    printAtPos("Zo niet druk op een andere toets!", 5, 8)
+end
+
+function choosePlayerError()
+    updateScreen("Player Selectie Error")
+    printAtPos("Probeer opnieuw", 5, 6)
+end
+
+function choosePlayerExists()
+    updateScreen("Player Selectie Error")
+    printAtPos("Sorry, je bent al geregistreerd!", 5, 6)
+end
+
+function chooseTeam(player, teams)
+    updateScreen("Team Selectie", "2", player)
+    printAtPos("Teams:", 5, 5)
+    for i = 1, #teams do
+        printAtPos("[" ..i.. "] " ..teams[i], 5, 5 + i)
+    end
+end
+
+function chooseTeamError()
+    updateScreen("Team Selectie Error")
+    printAtPos("Geen geldige keuze! Probeer opnieuw!", 5, 6)
+end
+
+function chooseClass(player, team, classes)
+    updateScreen("Class Selectie", "3", player)
+    printAtPos("Team: " ..team, 5, 5)
+    printAtPos("Classes:", 5, 7)
+    for i = 1, #classes do
+        printAtPos("[" ..i.. "] " ..classes[i], 5, 7 + i)
+    end
+end
+
+function chooseClassError()
+    updateScreen("Class Selectie Error")
+    printAtPos("Geen geldige keuze! Probeer opnieuw!", 5, 6)
+end
+
+function chooseWeapon(player, team, class, classes)
+    updateScreen("Wapen Selectie", "4", player)
+    printAtPos("Team: " ..team, 5, 5)
+    printAtPos("Class: " ..class, 5, 6)
+    printAtPos("Wapens:", 5, 8)
+    for i = 1, #classes[class]["gun"] do
+        printAtPos("[" ..i.. "] " ..classes[class]["gun"][i]["name"], 5, 8 + i)
+    end
+end
+
+function chooseWeaponError()
+    updateScreen("Wapen Selectie Error")
+    printAtPos("Geen geldige keuze! Probeer opnieuw!", 5, 6)
+end
+
+function validateInfo(player, team, class, gun, classes)
+    updateScreen("Informatie Check", "5", player)
+    printAtPos("Team:   " ..team, 5, 5)
+    printAtPos("Class:  " ..class, 5, 6)
+    printAtPos("Wapen:  " ..classes[class]["gun"][gun]["name"], 5, 7)
+    printAtPos("Als deze informatie klopt klik op de sensor!", 5, 9)
+    printAtPos("Zo niet druk dan op spatie!", 5, 10)
+end
+
+function validateInfoError()
+    updateScreen("informatie Check Error")
+    printAtPos("Niet dezelfde player!", 5, 6)
+end
+
+function validateInfoWrong()
+    updateScreen("Informatie Selectie Error")
+    printAtPos("Probeer opnieuw!", 5, 6)
+end
+
+function sendPlayerInfoSucces()
+    updateScreen("Registratie Succes")
+    printAtPos("Gelukt je bent geregistreerd!", 5, 6)
+end
+
+function sendPlayerInfoExists()
+    updateScreen("Registratie Error")
+    printAtPos("Je bent al geregistreerd!", 5, 6)
+end
+
+function sendPlayerInfoStem()
+    updateScreen("Registratie Error")
+    printAtPos("Sorry er is een stemming bezig!", 5, 6)
+end
+
+function sendPlayerInfoBattle()
+    updateScreen("Registratie Error")
+    printAtPos("Sorry er is een gevecht bezig!", 5, 6)
+end
